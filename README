@@ -1,0 +1,60 @@
+gmailreader - a console e-mail reader for gmail
+
+This file is in the public domain.
+
+Info:
+Author: Rafael Cunha de Almeida <almeidaraf@gmail.com>
+Software license: BSD
+Version: 0.1
+OS: UNIX (GNU/Linux, OpenBSD, FreeBSD, etc)
+Python version: 2.4 (it should work with anything greater than 2.4, if it
+doesn't, let me know)
+
+1. GOAL
+=======
+
+The goal for this project is to create a simple and clean interface to gmail
+e-mail which is capable of maintaining the label organization in the server.
+This way we avoid the annoyance of having a screwed up web interface -- when
+using gmail through pop3 -- while giving the user options to access the e-mails
+without having to open a heavy browser.
+
+
+2. LIBGMAIL
+===========
+
+This software is highly dependent on the work being done on libgmail. While I
+always wanted to write software like this, I never quite had the will to learn
+and play with gmail's javascript.
+
+libgmail is licensed GPLv2 and, as for the time of this writing, I'm keeping a
+slightly modified version of it on my personal webpage. It's not a well
+stabilished library yet, so I expect it to change a lot from one version to the
+other. To make sure new changes won't break my software I keep the tested
+version of libgmail on my website.
+
+I would distribute my software together with libgmail, but I don't know much
+about the license deals, my software is BSD licensed not GPL, so I didn't want
+to take any risks. Unless the author or someone who knows what he's talking
+about tell me that's ok to just copy libgmail.py and lgconstants.py to my
+project's package and not worry about anything else, I won't do it.
+
+
+3. INSTALL
+==========
+
+
+4. USING
+========
+
+Running gmailreader should get you a username and password prompt -- more
+details on how to skip this on section 5. You should simple answer that with
+your gmail username (not the whole e-mail) and password.
+
+After you're logged in you get into an interactive interface where you can type
+commands to work with your e-mail. You can type "help" and a list with all the
+commands will be presented to you.
+
+As for now the project is on its very early stages, so I won't bother stating
+all the commands here, which would just make it a new place to keep updating
+after new commands are added.
