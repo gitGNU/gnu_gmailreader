@@ -5,7 +5,7 @@
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #    1. Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
 #    2. Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
 #       documentation and/or other materials provided with the distribution.
 #    3. The name of the author may not be used to endorse or promote products
 #       derived from this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -133,7 +133,7 @@ class ListEmails(Command):
                       ['', 'N'][bool(c.unread)],
                       self.__fix_html(str(c.authors)),
                       self.__fix_html(self.__entitytoletter(str(c.subject))),
-                     ) 
+                     )
                     )
 
         for line in self.__tabler(t):
@@ -251,6 +251,22 @@ class ComposeEmail(Command):
         subprocess.call([EDITOR, DRAFT])
 
 
+class Help(Command):
+    def execute(self):
+        s = """Help:
+lf              - List folders
+lm              - List e-mails
+cd <num>|<name> - Go inside the folder indicated by `num'
+                  (as shown by lf) or by the folder's name
+o <num>         - Open e-mail of the number `num' indicated
+                  when `lm' was executed
+c               - Edit draft file
+s               - Send draft
+help            - Prints this message
+q               - Quit (c-d and c-c also work)"""
+        print s
+
+
 class CommandFactory:
     """Factory class used to generate new Commands and keep the execution state
     throught the AccountState class"""
@@ -263,7 +279,7 @@ class CommandFactory:
         This method serves as a generator for an executable command"""
         tmp = s.split()
         cmdtype = tmp[0]
-        rest = ''.join(tmp[1:]) 
+        rest = ''.join(tmp[1:])
 
         if cmdtype == LIST_FOLDERS:
             return ListFolders(rest, cls.accstate, acc)
@@ -278,28 +294,55 @@ class CommandFactory:
         elif cmdtype == SEND_DRAFT:
             return SendEmail(rest, cls.accstate, acc)
         elif cmdtype == HELP:
-            pass
+            return Help(rest, cls.accstate, acc)
         elif cmdtype == QUIT:
             raise SystemExit
         else:
             raise NoCommandError()
+
+
+class Config:
+    def __init__(self, fname):
+        self.attrs = {}
+        self.dummy = False
+        try:
+            lines = open(fname).read().split('\n')
+        except:
+            self.dummy = True
+            return
+        for line in lines:
+            arg = line.split('=')
+            self.attrs[arg[0].strip()] = reduce(str.__add__, arg[1:], '').strip()
     
+    def get(self, key, default = None):
+        if self.dummy:
+            return default
+
+        if default is None:
+            return self.attrs[key]
+        else:
+            if self.attrs.has_key(key):
+                return self.attrs[key]
+            else:
+                return default()
+
 
 def main():
-    email = raw_input("Username: ")
+    conf = Config(os.path.expanduser('~/.gmailreader/config'))
+    email = conf.get('username', lambda: raw_input("Username: "))
     email += '@gmail.com'
-    pw = getpass("Password: ")
-    
+    pw = conf.get('password', lambda: getpass("Password: "))
+
     acc = libgmail.GmailAccount(email, pw)
-    
+
     print 'Please wait while logging in ...'
-    
+
     try:
         acc.login()
     except libgmail.GmailLoginFailure,e:
         print "Login failed: %s" % e.message
         raise SystemExit
-    
+
     inboxmsgs = acc.getMessagesByFolder('inbox')
     unread = 0
     for msg in inboxmsgs:
