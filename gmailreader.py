@@ -40,6 +40,7 @@ import libgmail
 LIST_FOLDERS = 'lf'
 LIST_EMAILS = 'lm'
 ENTER_FOLDER = 'cd'
+ARCHIVE = 'ar'
 READ_EMAIL = 'o'
 COMPOSE = 'c'
 SEND_DRAFT = 's'
@@ -90,6 +91,19 @@ class ListFolders(Command):
 
         for i, name in enumerate(all_labels):
             print i, name
+
+
+class Archive(Command):
+    def __init__(self, s, state, acc):
+        Command.__init__(self, s, state, acc)
+        self.arg = s.strip()
+
+    def execute(self):
+        try:
+            self.acc.archiveThread(self.state.active_threads[int(self.arg)])
+        except AttributeError:
+            print "Version %s of libgmail doesn't support archiving" %\
+                  libgmail.Version
 
 
 class EnterFolder(Command):
@@ -146,7 +160,7 @@ class ListEmails(Command):
             print line
 
     #XXX: helper functions. They're ok for now, but I might want to revist them,
-    #     maybe write something better as -- and if -- the project moves
+    #     maybe write something better as -- if -- the project moves
     def __entitytoletter(self, s):
         newdefs = []
         for k, v in entitydefs.items():
@@ -274,6 +288,7 @@ o <num>         - Open e-mail of the number `num' indicated
                   when `lm' was executed
 c               - Edit draft file
 s               - Send draft
+ar <num>        - Archive e-mail indicated by the number `num'
 help            - Prints this message
 q               - Quit (c-d and c-c also work)"""
         print s
@@ -305,6 +320,8 @@ class CommandFactory:
             return ComposeEmail(rest, cls.accstate, acc)
         elif cmdtype == SEND_DRAFT:
             return SendEmail(rest, cls.accstate, acc)
+        elif cmdtype == ARCHIVE:
+            return Archive(rest, cls.accstate, acc)
         elif cmdtype == HELP:
             return Help(rest, cls.accstate, acc)
         elif cmdtype == QUIT:
