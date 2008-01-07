@@ -60,15 +60,21 @@ class ExecutionError(Exception):
 
 
 class AccountState:
+    """This class have variables that must be shared along the commands. The
+    ReadEmail command must know what were the last messages displayed to the
+    user, for instance."""
     def __init__(self):
         # starting directory is not a label
         self.current_dir = 'inbox'
         self.isLabel = False
         self.labels = []
+        # threads from the last lm command
         self.active_threads = []
 
 
 class Command:
+    """This is the basic unit of the program. All the user does is type down
+    commands which will give him messages on the screen."""
     def __init__(self, s, state, acc):
         self.state = state
         self.acc = acc
@@ -139,7 +145,8 @@ class ListEmails(Command):
         for line in self.__tabler(t):
             print line
 
-    # helper functions
+    #XXX: helper functions. They're ok for now, but I might want to revist them,
+    #     maybe write something better as -- and if -- the project moves
     def __entitytoletter(self, s):
         newdefs = []
         for k, v in entitydefs.items():
@@ -193,6 +200,9 @@ class ReadEmail(Command):
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
+    #XXX: This will need improvment, probably desearves a whole new class with
+    #     much more features such as removing the HTML so it's better readable
+    #     on a text editor and such.
     def __formating(self, text):
         return text.replace('\r', '')
 
@@ -221,6 +231,8 @@ class ReadEmail(Command):
 
 
 class SendEmail(Command):
+    #XXX: Write better handling -- rfc compatible -- maybe look around for good
+    #     libs for this or maybe make my own. Instead of such sucky function.
     def __interpret_email(self, text):
         attrs = {'body':[]}
         for line in text.split('\n'):
