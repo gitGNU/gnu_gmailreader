@@ -31,6 +31,7 @@ import subprocess
 import os
 import os.path
 import email
+from email.MIMEText import MIMEText
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
@@ -237,7 +238,7 @@ class ReadEmail(Command):
 
     EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
 
-    def __formating(self, text):
+    def __formating(self, text, msgid):
         msg = email.message_from_string(text)
         mget = lambda field: self.__print_field(msg, field)
         if msg.is_multipart():
@@ -245,14 +246,49 @@ class ReadEmail(Command):
         else:
             body = msg.get_payload()
         fields = [mget('to'),
+                  mget('cc'),
                   mget('from'),
                   mget('date'),
-                  mget('message-ID'),
+                  'Message-ID: %s' % msgid,
                   mget('subject'),
+                  '\n',
                   body,
                   self.EMAIL_DIVISOR]
 
-        return '\n'.join(fields)
+        return '\n'.join([x for x in fields if x])
+
+    def __add_quote(self, text):
+        buffer = []
+        for line in text.split('\n'):
+            line = '> ' + line
+            buffer.append(line)
+        return '\n'.join(buffer)
+
+    def __reply_maker(self, text):
+        msg = email.message_from_string(text)
+
+        #extracting information
+        frm = msg.get('From', '')
+        cc = msg.get('CC', '').split(',')
+        to = msg.get('To', '').split(',')
+        id = msg.get('Message-id', '')
+        body = msg.get_payload()
+        subject = msg.get('Subject', '')
+        if 're:' not in subject.lower():
+            subject = 'Re: ' + subject
+
+        #setting up the reply
+        body = self.__add_quote(body)
+        body = ("On %s, %s wrote:\n" % (msg.get('Date'), frm)) + body
+        newmsg = email.message_from_string(body)
+        newmsg['To'] = frm
+        receivers = [x for x in to if self.acc.name not in x]
+        receivers.extend(cc)
+        newmsg['CC'] =  ', '.join(receivers)
+        newmsg['In-reply-to'] = id
+        newmsg['Subject'] = subject
+
+        return newmsg.as_string()
 
     def execute(self):
         try:
@@ -265,7 +301,7 @@ class ReadEmail(Command):
         f = open(TMP, 'w')
         mtime = os.path.getmtime(TMP)
         for msg in conversation:
-            print>>f, self.__formating(msg.source)
+            print>>f, self.__formating(msg.source, msg.id)
         f.close()
 
         subprocess.call([EDITOR, TMP])
@@ -276,33 +312,22 @@ class ReadEmail(Command):
             except:
                 pass
             os.link(TMP, DRAFT)
+            text = self.__reply_maker(open(DRAFT).read())
+            f = open(DRAFT, 'w')
+            f.write(text)
+            f.close()
 
 
 class SendEmail(Command):
-    #XXX: Write better handling -- rfc compatible -- maybe look around for good
-    #     libs for this or maybe make my own. Instead of such sucky function.
-    def __interpret_email(self, text):
-        attrs = {'body':[]}
-        for line in text.split('\n'):
-            if line.startswith('To:'):
-                attrs['to'] = line[3:].strip()
-            elif line.startswith('CC:'):
-                attrs['cc'] = line[3:].strip()
-            elif line.startswith('Subject:'):
-                attrs['subject'] = line[8:]
-            else:
-                attrs['body'].append(line)
-        attrs['body'] = '\r\n'.join(attrs['body'])
-        return attrs
-
     def execute(self):
         text = open(DRAFT).read()
-        attrs = self.__interpret_email(text)
+        attrs = email.message_from_string(text)
         msg = libgmail.GmailComposedMessage(attrs.get('to'),
                                             attrs.get('subject'),
-                                            attrs.get('body'),
-                                            attrs.get('cc'))
-        self.acc.sendMessage(msg)
+                                            attrs.get_payload(),
+                                            attrs.get('cc'),
+                                            attrs.get('bcc'))
+        self.acc.sendMessage(msg, replyTo=attrs.get('in-reply-to'))
 
 
 class ComposeEmail(Command):
@@ -374,7 +399,8 @@ class Config:
             return
         for line in lines:
             arg = line.split('=')
-            self.attrs[arg[0].strip()] = reduce(str.__add__, arg[1:], '').strip()
+            key = arg[0].strip()
+            self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
     
     def get(self, key, default = None):
         if self.dummy:
@@ -405,16 +431,16 @@ def main():
         print "Login failed: %s" % e.message
         raise SystemExit
 
-    inboxmsgs = acc.getMessagesByFolder('inbox')
-    unread = 0
-    for msg in inboxmsgs:
-        if msg.unread:
-            unread += 1
-    print 'You have %s unread messages in your inbox.' % unread
+    # Start by printing the inbox contents
+    CommandFactory.generate(LIST_EMAILS, acc).execute()
 
     while 1:
         try:
-            command = CommandFactory.generate(raw_input('gmail> ').strip(), acc)
+            cmd = raw_input('gmail> ').strip()
+            if cmd:
+                command = CommandFactory.generate(cmd, acc)
+            else:
+                continue
         except EOFError:
             print
             raise SystemExit
