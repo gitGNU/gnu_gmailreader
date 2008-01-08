@@ -30,6 +30,7 @@ import readline
 import subprocess
 import os
 import os.path
+import email
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
@@ -214,11 +215,44 @@ class ReadEmail(Command):
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
-    #XXX: This will need improvment, probably desearves a whole new class with
-    #     much more features such as removing the HTML so it's better readable
-    #     on a text editor and such.
+    def __select_payload(self, payload):
+        alternative = None
+        tmp = ''
+        for msg in payload:
+            if msg.get_content_type() == 'text/html':
+                return msg.as_string()
+            elif msg.get_content_type() == 'text/plain':
+                alternative = msg
+        if alternative:
+            return msg.as_string()
+        else:
+            return payload[0].as_string()
+
+    def __print_field(self, msg, field):
+        value = msg.get(field)
+        if value:
+            return field.capitalize()+': '+value
+        else:
+            return ''
+
+    EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
+
     def __formating(self, text):
-        return text.replace('\r', '')
+        msg = email.message_from_string(text)
+        mget = lambda field: self.__print_field(msg, field)
+        if msg.is_multipart():
+            body = self.__select_payload(msg.get_payload())
+        else:
+            body = msg.get_payload()
+        fields = [mget('to'),
+                  mget('from'),
+                  mget('date'),
+                  mget('message-ID'),
+                  mget('subject'),
+                  body,
+                  self.EMAIL_DIVISOR]
+
+        return '\n'.join(fields)
 
     def execute(self):
         try:
@@ -268,7 +302,6 @@ class SendEmail(Command):
                                             attrs.get('subject'),
                                             attrs.get('body'),
                                             attrs.get('cc'))
-        print msg.__dict__
         self.acc.sendMessage(msg)
 
 
