@@ -423,30 +423,32 @@ class CommandFactory:
 
 
 class Config:
+    """This is a readonly config file handler."""
     def __init__(self, fname):
         self.attrs = {}
         self.dummy = False
         try:
             lines = open(fname).read().split('\n')
         except:
-            self.dummy = True
-            return
+            open(fname, 'w').close()
+            os.chmod(fname, 0600)
+
         for line in lines:
             arg = line.split('=')
             key = arg[0].strip()
             self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
     
-    def get(self, key, default = None):
-        if self.dummy:
-            return default
+    def get(self, key, default = lambda: None):
+        """get(key, defaultfun) -> string|None
 
-        if default is None:
+        This method was created allowing for lazy evaluation, you should pass a
+        function as a parameter which, when evaluated will return the default
+        value. This allow for very small code for when we want to read user
+        input as a default."""
+        if self.attrs.has_key(key):
             return self.attrs[key]
         else:
-            if self.attrs.has_key(key):
-                return self.attrs[key]
-            else:
-                return default()
+            return default()
 
 
 def main():
@@ -496,9 +498,11 @@ if __name__ == '__main__':
             raise SystemExit, 1
         DRAFT = os.path.expanduser('~/.gmailreader/draft')
         TMP = os.path.expanduser('~/.gmailreader/tmp')
-        EDITOR = os.getenv('EDITOR')
+        EDITOR=Config(os.path.expanduser('~/.gmailreader/config')).get('editor')
         if not EDITOR:
-            EDITOR = 'vim'
+            EDITOR = os.getenv('EDITOR')
+        if not EDITOR:
+            EDITOR = 'vi'
 
         main()
     except KeyboardInterrupt:
