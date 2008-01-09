@@ -220,15 +220,29 @@ class ReadEmail(Command):
         self.arg = s.strip()
 
     def __select_payload(self, payload):
-        alternative = None
-        tmp = ''
+        # looking for the real message
+        for msg in payload:
+            if msg.get_content_type() == 'multipart/alternative':
+                payload = msg.get_payload()
+                break
+
+        # let's search for html and plain stuff
+        html = None
+        plain = None
         for msg in payload:
             if msg.get_content_type() == 'text/html':
-                return msg.as_string()
+                html = msg.as_string()
             elif msg.get_content_type() == 'text/plain':
-                alternative = msg
-        if alternative:
-            return msg.as_string()
+                plain = msg.as_string()
+
+        p = subprocess.Popen(['html2text'],
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
+        if html:
+            (output, err) = p.communicate(html)
+            return output
+        elif plain:
+            return plain
         else:
             return payload[0].as_string()
 
