@@ -43,6 +43,16 @@ project's package and not worry about anything else, I won't do it.
 3. INSTALL
 ==========
 
+Use the setup.py script for installing the program. The only thing you have to
+type is:
+
+	% python setup.py install
+
+Further help on the options (such as using a prefix) can be seen with the
+following command:
+
+	% python setup.py install --help
+
 
 4. USING
 ========
