@@ -31,7 +31,6 @@ import subprocess
 import os
 import os.path
 import email
-from email.MIMEText import MIMEText
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
@@ -206,7 +205,11 @@ class ListEmails(Command):
         table = self.__compose_field([x[0] for x in t])
         table = self.__concat(table, self.__compose_field([x[1] for x in t]))
         table = self.__concat(table, self.__compose_field([x[2] for x in t]))
-        table = self.__concat(table, [x[3] for x in t])
+
+        indentsize = self.__greatest_len([x[0] for x in t]) +\
+                     self.__greatest_len([x[1] for x in t])
+        table = self.__concat(table,
+                              ['\n'+((2+indentsize)*' ')+x[3] for x in t])
 
         return table
 
