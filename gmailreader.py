@@ -106,6 +106,8 @@ class Archive(Command):
         except AttributeError:
             print "Version %s of libgmail doesn't support archiving" %\
                   libgmail.Version
+        except ValueError:
+            raise ExecutionError("`ar' expects a number as parameter")
 
 
 class ReportSpam(Command):
@@ -119,6 +121,8 @@ class ReportSpam(Command):
         except AttributeError:
             print "Version %s of libgmail doesn't support spam reporting" %\
                   libgmail.Version
+        except ValueError:
+            raise ExecutionError("`!' expects a number as parameter")
 
 
 class EnterFolder(Command):
@@ -149,6 +153,7 @@ class EnterFolder(Command):
             else:
                 self.state.current_dir = label
 
+        self.state.active_threads = []
         self.state.isLabel = not self.state.current_dir in\
                                  libgmail.STANDARD_FOLDERS
 
