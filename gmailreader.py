@@ -45,6 +45,7 @@ ARCHIVE = 'ar'
 READ_EMAIL = 'o'
 COMPOSE = 'c'
 SEND_DRAFT = 's'
+REPORT_SPAM = '!'
 HELP = 'help'
 QUIT = 'q'
 
@@ -104,6 +105,19 @@ class Archive(Command):
             self.acc.archiveThread(self.state.active_threads[int(self.arg)])
         except AttributeError:
             print "Version %s of libgmail doesn't support archiving" %\
+                  libgmail.Version
+
+
+class ReportSpam(Command):
+    def __init__(self, s, state, acc):
+        Command.__init__(self, s, state, acc)
+        self.arg = s.strip()
+
+    def execute(self):
+        try:
+            self.acc.reportSpam(self.state.active_threads[int(self.arg)])
+        except AttributeError:
+            print "Version %s of libgmail doesn't support spam reporting" %\
                   libgmail.Version
 
 
@@ -180,7 +194,7 @@ class ListEmails(Command):
         s = s.replace(r'\u003cb\>', '')
         s = s.replace(r'\u003c/b\>', '')
 
-        return s
+        return s.strip()
 
     def __greatest_len(self, l):
         return max(map(len, l))
@@ -364,6 +378,7 @@ o <num>         - Open e-mail of the number `num' indicated
 c               - Edit draft file
 s               - Send draft
 ar <num>        - Archive e-mail indicated by the number `num'
+! <num>         - Report e-mail indicated by the number `num' as spam
 help            - Prints this message
 q               - Quit (c-d and c-c also work)"""
         print s
@@ -397,6 +412,8 @@ class CommandFactory:
             return SendEmail(rest, cls.accstate, acc)
         elif cmdtype == ARCHIVE:
             return Archive(rest, cls.accstate, acc)
+        elif cmdtype == REPORT_SPAM:
+            return ReportSpam(rest, cls.accstate, acc)
         elif cmdtype == HELP:
             return Help(rest, cls.accstate, acc)
         elif cmdtype == QUIT:
