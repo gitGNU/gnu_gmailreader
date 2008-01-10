@@ -31,12 +31,15 @@ import subprocess
 import os
 import os.path
 import email
+import select
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
 
 import libgmail
 
+# Time (in seconds) to wait between e-mail checks
+TIMEOUT = 10
 
 LIST_FOLDERS = 'lf'
 LIST_EMAILS = 'lm'
@@ -46,6 +49,7 @@ READ_EMAIL = 'o'
 COMPOSE = 'c'
 SEND_DRAFT = 's'
 REPORT_SPAM = '!'
+WAIT_EMAIL = 'wait'
 HELP = 'help'
 QUIT = 'q'
 
@@ -354,6 +358,40 @@ class ReadEmail(Command):
             f.close()
 
 
+class WaitEmail(Command):
+    def __init__(self, s, state, acc):
+        Command.__init__(self, s, state, acc)
+        self.arg = [x.strip() for x in s.split()]
+
+    def __search_new(self):
+        for folder in self.arg:
+            if folder in libgmail.STANDARD_FOLDERS:
+                conversations = self.acc.getMessagesByFolder(folder)
+            else:
+                conversations = self.acc.getMessagesByLabel(folder)
+            for msg in conversations:
+                if msg.unread:
+                    return folder
+
+    def execute(self):
+        while 1:
+            rl, wl, xl = select.select([sys.stdin],[],[],TIMEOUT)
+            if sys.stdin in rl:
+                sys.stdin.read(1)
+                break
+            folder = self.__search_new()
+            if folder:
+                break
+
+        if folder:
+            conf = Config(os.path.expanduser('~/.gmailreader/config'))
+            script = os.path.expanduser(conf.get('script'))
+            if script:
+                subprocess.call([script])
+            CommandFactory.generate('cd %s' % folder, self.acc).execute()
+            CommandFactory.generate('lm', self.acc).execute()
+
+
 class SendEmail(Command):
     def execute(self):
         text = open(DRAFT).read()
@@ -380,6 +418,10 @@ cd <num>|<name> - Go inside the folder indicated by `num'
                   (as shown by lf) or by the folder's name
 o <num>         - Open e-mail of the number `num' indicated
                   when `lm' was executed
+wait <name1> <name2> ... - Keeps on waiting for the named folders
+                           if new email arrives it executes a script
+                           pointed out on .gmailreader/config and
+                           prints the folder contents on screen
 c               - Edit draft file
 s               - Send draft
 ar <num>        - Archive e-mail indicated by the number `num'
@@ -419,6 +461,8 @@ class CommandFactory:
             return Archive(rest, cls.accstate, acc)
         elif cmdtype == REPORT_SPAM:
             return ReportSpam(rest, cls.accstate, acc)
+        elif cmdtype == WAIT_EMAIL:
+            return WaitEmail(rest, cls.accstate, acc)
         elif cmdtype == HELP:
             return Help(rest, cls.accstate, acc)
         elif cmdtype == QUIT:
@@ -501,8 +545,10 @@ if __name__ == '__main__':
         if os.system('mkdir -p ~/.gmailreader'):
             sys.stderr.write('Unable to create ~/.gmailreader\n')
             raise SystemExit, 1
+
         DRAFT = os.path.expanduser('~/.gmailreader/draft')
         TMP = os.path.expanduser('~/.gmailreader/tmp')
+
         EDITOR=Config(os.path.expanduser('~/.gmailreader/config')).get('editor')
         if not EDITOR:
             EDITOR = os.getenv('EDITOR')
