@@ -32,6 +32,8 @@ import os
 import os.path
 import email
 import select
+import urllib2
+import shutil
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
@@ -339,19 +341,15 @@ class ReadEmail(Command):
             raise ExecutionError("Invalid thread number")
 
         f = open(TMP, 'w')
-        mtime = os.path.getmtime(TMP)
         for msg in conversation:
             print>>f, self.__formating(msg.source, msg.id)
         f.close()
+        mtime = os.path.getmtime(TMP)
 
         subprocess.call([EDITOR, TMP])
 
         if mtime != os.path.getmtime(TMP):
-            try:
-                os.remove(DRAFT)
-            except:
-                pass
-            os.link(TMP, DRAFT)
+            shutil.copy(TMP, DRAFT)
             text = self.__reply_maker(open(DRAFT).read())
             f = open(DRAFT, 'w')
             f.write(text)
@@ -365,15 +363,19 @@ class WaitEmail(Command):
 
     def __search_new(self):
         for folder in self.arg:
-            if folder in libgmail.STANDARD_FOLDERS:
-                conversations = self.acc.getMessagesByFolder(folder)
-            else:
-                conversations = self.acc.getMessagesByLabel(folder)
+            try:
+                if folder in libgmail.STANDARD_FOLDERS:
+                    conversations = self.acc.getMessagesByFolder(folder)
+                else:
+                    conversations = self.acc.getMessagesByLabel(folder)
+            except urllib2.URLError:
+                return
             for msg in conversations:
                 if msg.unread:
                     return folder
 
     def execute(self):
+        folder = None
         while 1:
             rl, wl, xl = select.select([sys.stdin],[],[],TIMEOUT)
             if sys.stdin in rl:
