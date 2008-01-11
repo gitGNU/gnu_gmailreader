@@ -34,6 +34,7 @@ import email
 import select
 import urllib2
 import shutil
+import HTMLParser
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
@@ -66,6 +67,29 @@ class ExecutionError(Exception):
 
     def __str__(self):
         return repr(self.message)
+
+
+class AuthorFieldParser(HTMLParser.HTMLParser):
+    def __init__(self):
+        HTMLParser.HTMLParser.__init__(self)
+        self.inside_span = False
+        self.email = ''
+        self.text = ''
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'span':
+            self.inside_span = True
+            self.email = dict(attrs)['id'].replace('_upro_', '')
+
+    def handle_data(self, data):
+        if self.inside_span:
+            self.text += data + (' <%s>' % self.email)
+        else:
+            self.text += data
+
+    def handle_endtag(self, tag):
+        if tag == 'span':
+            self.inside_span = False
 
 
 class AccountState:
@@ -177,8 +201,8 @@ class ListEmails(Command):
         for i, c in enumerate(conversations):
             t.append((str(i),
                       ['', 'N'][bool(c.unread)],
-                      self.__fix_html(str(c.authors)),
-                      self.__fix_html(self.__entitytoletter(str(c.subject))),
+                      self.__fix_html(self.__fix_encoding(c.authors)),
+                      self.__fix_encoding(c.subject),
                      )
                     )
 
@@ -198,14 +222,25 @@ class ListEmails(Command):
         return s
 
     def __fix_html(self, s):
-        s = s.replace(r'\u003cspan id\u003d"_upro_', '<')
-        s = s.replace(r'"\>', '> ')
-        s = s.replace(r'\u003c/span\>', '')
-        #bold
-        s = s.replace(r'\u003cb\>', '')
-        s = s.replace(r'\u003c/b\>', '')
+        parser = AuthorFieldParser()
+        parser.feed(s)
+        parser.close()
 
-        return s.strip()
+        return parser.text
+
+    def __fix_encoding(self, s):
+        final = []
+        i = 0
+        while i < len(s):
+            if s[i] == '\\' and s[i+1] == 'u':
+                num = int(s[i+2:i+6], 16)
+                final.append(unichr(num).encode('utf-8'))
+                i += 6
+            else:
+                final.append(s[i])
+                i += 1
+
+        return self.__entitytoletter(''.join(final).strip())
 
     def __greatest_len(self, l):
         return max(map(len, l))
