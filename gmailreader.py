@@ -256,20 +256,32 @@ class ReadEmail(Command):
         plain = None
         for msg in payload:
             if msg.get_content_type() == 'text/html':
-                html = msg.as_string()
+                html = msg.get_payload(decode=True)
+                charset = msg.get_charset()
             elif msg.get_content_type() == 'text/plain':
-                plain = msg.as_string()
+                plain = msg.get_payload(decode=True)
+                charset = msg.get_charset()
 
         p = subprocess.Popen(['html2text'],
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE)
         if html:
             (output, err) = p.communicate(html)
-            return output
+            if charset:
+                return output.decode(charset)
+            else:
+                return output.decode('quoted-printable')
         elif plain:
-            return plain
+            if charset:
+                return plain.decode(charset)
+            else:
+                return plain.decode('quoted-printable')
         else:
-            return payload[0].as_string()
+            tmp = payload[0].get_payload(decode=True)
+            if payload[0].get_charset():
+                return tmp.decode(payload[0].get_charset())
+            else:
+                return tmp
 
     def __print_field(self, msg, field):
         value = msg.get(field)
@@ -286,7 +298,12 @@ class ReadEmail(Command):
         if msg.is_multipart():
             body = self.__select_payload(msg.get_payload())
         else:
-            body = msg.get_payload()
+            body = msg.get_payload(decode=True)
+            charset = msg.get_charset()
+            if charset:
+                body = body.decode(charset)
+            else:
+                body = body.decode('quoted-printable')
         fields = [mget('to'),
                   mget('cc'),
                   mget('from'),
