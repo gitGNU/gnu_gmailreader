@@ -228,8 +228,14 @@ class ListEmails(Command):
 
     def __fix_html(self, s):
         parser = AuthorFieldParser()
-        parser.feed(s)
-        parser.close()
+        try:
+            parser.feed(s)
+            parser.close()
+        except HTMLParser.HTMLParseError:
+            #XXX: I gotta make some better html handling some day. The shouldn't
+            #be any HTML in the title, really, maybe if I don't change the
+            #HTML entities to actual characters before hand, who knows...
+            parser.text = s
 
         return parser.text
 
@@ -313,12 +319,12 @@ class ReadEmail(Command):
             if charset:
                 return output.decode(charset)
             else:
-                return output.decode('quoted-printable')
+                return output
         elif plain:
             if charset:
                 return plain.decode(charset)
             else:
-                return plain.decode('quoted-printable')
+                return plain
         else:
             tmp = payload[0].get_payload(decode=True)
             if payload[0].get_charset():
@@ -345,8 +351,6 @@ class ReadEmail(Command):
             charset = msg.get_charset()
             if charset:
                 body = body.decode(charset)
-            else:
-                body = body.decode('quoted-printable')
         fields = [mget('to'),
                   mget('cc'),
                   mget('from'),
