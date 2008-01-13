@@ -202,7 +202,7 @@ class ListEmails(Command):
             t.append((str(i),
                       ['', 'N'][bool(c.unread)],
                       self.__fix_html(self.__fix_encoding(c.authors)),
-                      self.__fix_encoding(c.subject),
+                      self.__fix_html(self.__fix_encoding(c.subject)),
                      )
                     )
 
