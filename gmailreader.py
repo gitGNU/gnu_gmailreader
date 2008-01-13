@@ -118,7 +118,10 @@ class Command:
 
 class ListFolders(Command):
     def execute(self):
-        all_labels = libgmail.STANDARD_FOLDERS + self.acc.getLabelNames()
+        if self.acc.getLabelNames():
+            all_labels = libgmail.STANDARD_FOLDERS + self.acc.getLabelNames()
+        else:
+            all_labels = libgmail.STANDARD_FOLDERS
         self.state.labels = list(all_labels)
 
         for i, name in enumerate(all_labels):
@@ -167,9 +170,11 @@ class EnterFolder(Command):
 
         if self.state.labels:
             all_labels = self.state.labels
-        else:
+        elif self.acc.getLabelNames():
             all_labels = list(libgmail.STANDARD_FOLDERS +
                               self.acc.getLabelNames())
+        else:
+            all_labels = list(libgmail.STANDARD_FOLDERS)
 
         try:
             i = int(self.arg)
@@ -261,6 +266,9 @@ class ListEmails(Command):
         return t
 
     def __tabler(self, t):
+        if not t:
+            return []
+
         table = []
         table = self.__compose_field([x[0] for x in t])
         table = self.__concat(table, self.__compose_field([x[1] for x in t]))
@@ -529,17 +537,16 @@ class Config:
     """This is a readonly config file handler."""
     def __init__(self, fname):
         self.attrs = {}
-        self.dummy = False
         try:
             lines = open(fname).read().split('\n')
         except:
             open(fname, 'w').close()
             os.chmod(fname, 0600)
-
-        for line in lines:
-            arg = line.split('=')
-            key = arg[0].strip()
-            self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
+        else:
+            for line in lines:
+                arg = line.split('=')
+                key = arg[0].strip()
+                self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
     
     def get(self, key, default = lambda: None):
         """get(key, defaultfun) -> string|None
