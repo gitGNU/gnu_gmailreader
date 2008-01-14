@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Copyright (c) 2008
 #       Rafael C. Almeida <almeidaraf@gmail.com>. All rights reserved.
@@ -306,10 +307,10 @@ class ReadEmail(Command):
         for msg in payload:
             if msg.get_content_type() == 'text/html':
                 html = msg.get_payload(decode=True)
-                charset = msg.get_charset()
+                charset = msg.get_content_charset()
             elif msg.get_content_type() == 'text/plain':
                 plain = msg.get_payload(decode=True)
-                charset = msg.get_charset()
+                charset = msg.get_content_charset()
 
         p = subprocess.Popen(['html2text'],
                              stdin=subprocess.PIPE,
@@ -317,18 +318,19 @@ class ReadEmail(Command):
         if html:
             (output, err) = p.communicate(html)
             if charset:
-                return output.decode(charset)
+                return output.decode(charset).encode('utf-8')
             else:
                 return output
         elif plain:
             if charset:
-                return plain.decode(charset)
+                return plain.decode(charset).encode('utf-8')
             else:
                 return plain
         else:
             tmp = payload[0].get_payload(decode=True)
-            if payload[0].get_charset():
-                return tmp.decode(payload[0].get_charset())
+            charset = payload[0].get_content_charset()
+            if charset:
+                return tmp.decode(charset).encode('utf-8')
             else:
                 return tmp
 
@@ -348,9 +350,9 @@ class ReadEmail(Command):
             body = self.__select_payload(msg.get_payload())
         else:
             body = msg.get_payload(decode=True)
-            charset = msg.get_charset()
+            charset = msg.get_content_charset()
             if charset:
-                body = body.decode(charset)
+                body = body.decode(charset).encode('utf-8')
         fields = [mget('to'),
                   mget('cc'),
                   mget('from'),
