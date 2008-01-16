@@ -1,14 +1,32 @@
 gmailreader - a console e-mail reader for gmail
+Copyright (C) 2008 Rafael Cunha de Almeida
 
-This file is in the public domain.
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 
-Info:
-Author: Rafael Cunha de Almeida <almeidaraf@gmail.com>
-Software license: BSD
-Version: 0.1
-OS: UNIX (GNU/Linux, OpenBSD, FreeBSD, etc)
-Python version: 2.4 (it should work with anything greater than 2.4, if it
-doesn't, let me know)
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+0. REQUIREMENTS
+===============
+
+* OS: GNU/Linux, OpenBSD, FreeBSD, NetBSD, OpenSolaris, Mac OS X
+      (if it doesn't work in any of those, let me know)
+* Non-supported OS: Windows (although some parts of it may work on windows, I
+                             don't expect all the features to work)
+* Python version: 2.4 (it should work with anything greater than 2.4, if it
+                       doesn't, let me know)
+* libgmail: http://www.dcc.ufmg.br/~rafaelc/libgmail/
+            (official version at http://libgmail.sourceforge.net)
+
 
 1. GOAL
 =======
@@ -28,19 +46,21 @@ always wanted to write software like this, I never quite had the will to learn
 and play with gmail's javascript.
 
 libgmail is licensed GPLv2 and, as for the time of this writing, I'm keeping a
-slightly modified version of it on my personal webpage. It's not a well
+slightly modified version of it on my personal webpage
+(http://www.dcc.ufmg.br/~rafaelc/libgmail/). It's not a well
 stabilished library yet, so I expect it to change a lot from one version to the
 other. To make sure new changes won't break my software I keep the tested
 version of libgmail on my website.
 
-I would distribute my software together with libgmail, but I don't know much
-about the license deals, my software is BSD licensed not GPL, so I didn't want
-to take any risks. Unless the author or someone who knows what he's talking
-about tell me that's ok to just copy libgmail.py and lgconstants.py to my
-project's package and not worry about anything else, I won't do it.
+
+3. LICENSE
+==========
+While all the files in this package are BSD-licensed, the only way to use this
+package is using the GPLv2-licensed library libgmail. That makes the whole
+software to be a GPL-licensed.
 
 
-3. INSTALL
+4. INSTALL
 ==========
 
 Use the setup.py script for installing the program. The only thing you have to
@@ -54,7 +74,7 @@ following command:
 	% python setup.py install --help
 
 
-4. USING
+5. USING
 ========
 
 Running gmailreader should get you a username and password prompt -- more

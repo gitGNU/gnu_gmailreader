@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# This file is in the public domain.
-
 from distutils.core import setup
 
 setup(name='gmailreader',
