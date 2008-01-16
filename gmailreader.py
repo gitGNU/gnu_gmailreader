@@ -318,19 +318,31 @@ class ReadEmail(Command):
         if html:
             (output, err) = p.communicate(html)
             if charset:
-                return output.decode(charset).encode('utf-8')
+                try:
+                    return output.decode(charset).encode('utf-8')
+                except UnicodeDecodeError:
+                    # We can't always trust the information we're given :-/
+                    return output
             else:
                 return output
         elif plain:
             if charset:
-                return plain.decode(charset).encode('utf-8')
+                try:
+                    return plain.decode(charset).encode('utf-8')
+                except UnicodeDecodeError:
+                    # We can't always trust the information we're given :-/
+                    return plain
             else:
                 return plain
         else:
             tmp = payload[0].get_payload(decode=True)
             charset = payload[0].get_content_charset()
             if charset:
-                return tmp.decode(charset).encode('utf-8')
+                try:
+                    return tmp.decode(charset).encode('utf-8')
+                except UnicodeDecodeError:
+                    # We can't always trust the information we're given :-/
+                    return tmp
             else:
                 return tmp
 
@@ -352,7 +364,11 @@ class ReadEmail(Command):
             body = msg.get_payload(decode=True)
             charset = msg.get_content_charset()
             if charset:
-                body = body.decode(charset).encode('utf-8')
+                try:
+                    body = body.decode(charset).encode('utf-8')
+                except UnicodeDecodeError:
+                    # We can't always trust the information we're given :-/
+                    return body
         fields = [mget('to'),
                   mget('cc'),
                   mget('from'),
