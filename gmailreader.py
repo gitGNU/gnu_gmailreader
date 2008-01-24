@@ -43,6 +43,7 @@ from htmlentitydefs import entitydefs
 import libgmail
 
 from MIMEParser import MIMEParser
+from Config import Config
 
 # Time (in seconds) to wait between e-mail checks
 TIMEOUT = 10
@@ -209,8 +210,8 @@ class ListEmails(Command):
         for i, c in enumerate(conversations):
             t.append((str(i),
                       ['', 'N'][bool(c.unread)],
-                      self.__fix_html(self.__fix_encoding(c.authors)),
-                      self.__fix_html(self.__fix_encoding(c.subject)),
+                      self.__fix_all(c.authors),
+                      self.__fix_all(c.subject),
                      )
                     )
 
@@ -219,6 +220,13 @@ class ListEmails(Command):
 
     #XXX: helper functions. They're ok for now, but I might want to revist them,
     #     maybe write something better as -- if -- the project moves
+    def __fix_all(self, s):
+        s = self.__fix_encoding(s)
+        s = self.__fix_html(s)
+        s = self.__entitytoletter(s)
+
+        return s
+
     def __entitytoletter(self, s):
         newdefs = []
         for k, v in entitydefs.items():
@@ -235,9 +243,8 @@ class ListEmails(Command):
             parser.feed(s)
             parser.close()
         except HTMLParser.HTMLParseError:
-            #XXX: I gotta make some better html handling some day. The shouldn't
-            #be any HTML in the title, really, maybe if I don't change the
-            #HTML entities to actual characters before hand, who knows...
+            #XXX: I gotta make some better html handling some day. There
+            #     shouldn't be any HTML in the title, really.
             parser.text = s
 
         return parser.text
@@ -254,7 +261,7 @@ class ListEmails(Command):
                 final.append(s[i])
                 i += 1
 
-        return self.__entitytoletter(''.join(final).strip())
+        return ''.join(final).strip()
 
     def __greatest_len(self, l):
         return max(map(len, l))
@@ -292,6 +299,8 @@ class ListEmails(Command):
 
 
 class ReadEmail(Command):
+    EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
+
     def __init__(self, s, state, acc):
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
@@ -302,8 +311,6 @@ class ReadEmail(Command):
             return field.capitalize()+': '+value
         else:
             return ''
-
-    EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
 
     def __format(self, text, msgid):
         msg = email.message_from_string(text)
@@ -498,34 +505,6 @@ class CommandFactory:
             raise SystemExit
         else:
             raise NoCommandError()
-
-
-class Config:
-    """This is a readonly config file handler."""
-    def __init__(self, fname):
-        self.attrs = {}
-        try:
-            lines = open(fname).read().split('\n')
-        except:
-            open(fname, 'w').close()
-            os.chmod(fname, 0600)
-        else:
-            for line in lines:
-                arg = line.split('=')
-                key = arg[0].strip()
-                self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
-    
-    def get(self, key, default = lambda: None):
-        """get(key, defaultfun) -> string|None
-
-        This method was created allowing for lazy evaluation, you should pass a
-        function as a parameter which, when evaluated will return the default
-        value. This allow for very small code for when we want to read user
-        input as a default."""
-        if self.attrs.has_key(key):
-            return self.attrs[key]
-        else:
-            return default()
 
 
 def main():
