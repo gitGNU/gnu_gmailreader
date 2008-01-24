@@ -26,6 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import os.path
 import sys
 
 from Config import Config
@@ -36,7 +37,11 @@ if os.system('mkdir -p ~/.gmailreader'):
     raise SystemExit, 1
 
 DRAFT = os.path.expanduser('~/.gmailreader/draft')
+if not os.path.isfile(DRAFT):
+    open(DRAFT, 'w').close()
 TMP = os.path.expanduser('~/.gmailreader/tmp')
+if not os.path.isfile(TMP):
+    open(TMP, 'w').close()
 
 EDITOR = Config(os.path.expanduser('~/.gmailreader/config')).get('editor')
 if not EDITOR:
