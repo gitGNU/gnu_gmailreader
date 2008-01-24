@@ -38,7 +38,36 @@ using gmail through pop3 -- while giving the user options to access the e-mails
 without having to open a heavy browser.
 
 
-2. LIBGMAIL
+2. INSTALL
+==========
+
+Use the setup.py script for installing the program. The only thing you have to
+type is:
+
+	% python setup.py install
+
+Further help on the options (such as using a prefix) can be seen with the
+following command:
+
+	% python setup.py install --help
+
+
+3. USING
+========
+
+Running gmailreader should get you a username and password prompt. You should
+simple answer that with your gmail username (not the whole e-mail) and password.
+
+After you're logged in you get into an interactive interface where you can type
+commands to work with your e-mail. You can type "help" and a list with all the
+commands will be presented to you.
+
+As for now the project is on its very early stages, so I won't bother stating
+all the commands here, which would just make it a new place to keep updating
+after new commands are added.
+
+
+4. LIBGMAIL
 ===========
 
 This software is highly dependent on the work being done on libgmail. While I
@@ -53,38 +82,8 @@ other. To make sure new changes won't break my software I keep the tested
 version of libgmail on my website.
 
 
-3. LICENSE
+5. LICENSE
 ==========
 While all the files in this package are BSD-licensed, the only way to use this
 package is using the GPLv2-licensed library libgmail. That makes the whole
 software to be a GPL-licensed.
-
-
-4. INSTALL
-==========
-
-Use the setup.py script for installing the program. The only thing you have to
-type is:
-
-	% python setup.py install
-
-Further help on the options (such as using a prefix) can be seen with the
-following command:
-
-	% python setup.py install --help
-
-
-5. USING
-========
-
-Running gmailreader should get you a username and password prompt -- more
-details on how to skip this on section 5. You should simple answer that with
-your gmail username (not the whole e-mail) and password.
-
-After you're logged in you get into an interactive interface where you can type
-commands to work with your e-mail. You can type "help" and a list with all the
-commands will be presented to you.
-
-As for now the project is on its very early stages, so I won't bother stating
-all the commands here, which would just make it a new place to keep updating
-after new commands are added.

@@ -42,6 +42,8 @@ from htmlentitydefs import entitydefs
 
 import libgmail
 
+from MIMEParser import MIMEParser
+
 # Time (in seconds) to wait between e-mail checks
 TIMEOUT = 10
 
@@ -294,58 +296,6 @@ class ReadEmail(Command):
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
-    def __select_payload(self, payload):
-        # looking for the real message
-        for msg in payload:
-            if msg.get_content_type() == 'multipart/alternative':
-                payload = msg.get_payload()
-                break
-
-        # let's search for html and plain stuff
-        html = None
-        plain = None
-        for msg in payload:
-            if msg.get_content_type() == 'text/html':
-                html = msg.get_payload(decode=True)
-                charset = msg.get_content_charset()
-            elif msg.get_content_type() == 'text/plain':
-                plain = msg.get_payload(decode=True)
-                charset = msg.get_content_charset()
-
-        p = subprocess.Popen(['html2text'],
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE)
-        if html:
-            (output, err) = p.communicate(html)
-            if charset:
-                try:
-                    return output.decode(charset).encode('utf-8')
-                except UnicodeDecodeError:
-                    # We can't always trust the information we're given :-/
-                    return output
-            else:
-                return output
-        elif plain:
-            if charset:
-                try:
-                    return plain.decode(charset).encode('utf-8')
-                except UnicodeDecodeError:
-                    # We can't always trust the information we're given :-/
-                    return plain
-            else:
-                return plain
-        else:
-            tmp = payload[0].get_payload(decode=True)
-            charset = payload[0].get_content_charset()
-            if charset:
-                try:
-                    return tmp.decode(charset).encode('utf-8')
-                except UnicodeDecodeError:
-                    # We can't always trust the information we're given :-/
-                    return tmp
-            else:
-                return tmp
-
     def __print_field(self, msg, field):
         value = msg.get(field)
         if value:
@@ -355,20 +305,15 @@ class ReadEmail(Command):
 
     EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
 
-    def __formating(self, text, msgid):
+    def __format(self, text, msgid):
         msg = email.message_from_string(text)
         mget = lambda field: self.__print_field(msg, field)
-        if msg.is_multipart():
-            body = self.__select_payload(msg.get_payload())
-        else:
-            body = msg.get_payload(decode=True)
-            charset = msg.get_content_charset()
-            if charset:
-                try:
-                    body = body.decode(charset).encode('utf-8')
-                except UnicodeDecodeError:
-                    # We can't always trust the information we're given :-/
-                    return body
+
+        mp = MIMEParser(text)
+        body = mp.body
+        if mp.forward:
+            body += '\n\n' + mp.forward
+
         fields = [mget('to'),
                   mget('cc'),
                   mget('from'),
@@ -424,7 +369,7 @@ class ReadEmail(Command):
 
         f = open(TMP, 'w')
         for msg in conversation:
-            print>>f, self.__formating(msg.source, msg.id)
+            print>>f, self.__format(msg.source, msg.id)
         f.close()
         mtime = os.path.getmtime(TMP)
 
