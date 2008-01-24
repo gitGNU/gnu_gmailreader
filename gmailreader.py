@@ -380,7 +380,7 @@ class ReadEmail(Command):
         f.close()
         mtime = os.path.getmtime(TMP)
 
-        subprocess.call([EDITOR, TMP])
+        os.system('%s %s' % (EDITOR, TMP))
 
         if mtime != os.path.getmtime(TMP):
             shutil.copy(TMP, DRAFT)
@@ -442,7 +442,7 @@ class SendEmail(Command):
 
 class ComposeEmail(Command):
     def execute(self):
-        subprocess.call([EDITOR, DRAFT])
+        os.system('%s %s' % (EDITOR, DRAFT))
 
 
 class Help(Command):

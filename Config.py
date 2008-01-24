@@ -36,7 +36,7 @@ class Config:
             os.chmod(fname, 0600)
         else:
             for line in lines:
-                arg = line.split('=')
+                arg = line.split('=', 1)
                 key = arg[0].strip()
                 self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
     
