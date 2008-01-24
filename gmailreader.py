@@ -74,7 +74,7 @@ class ExecutionError(Exception):
         return repr(self.message)
 
 
-class AuthorFieldParser(HTMLParser.HTMLParser):
+class FieldParser(HTMLParser.HTMLParser):
     def __init__(self):
         HTMLParser.HTMLParser.__init__(self)
         self.inside_span = False
@@ -239,7 +239,7 @@ class ListEmails(Command):
         return s
 
     def __fix_html(self, s):
-        parser = AuthorFieldParser()
+        parser = FieldParser()
         try:
             parser.feed(s)
             parser.close()

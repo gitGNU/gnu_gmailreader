@@ -1,3 +1,4 @@
+"""Contains a class that handles config-files."""
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2008
@@ -26,8 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 class Config:
-    """This is a readonly config file handler."""
+    """This is a readonly config-file handler."""
     def __init__(self, fname):
+        """__init__(self, string)
+
+        fname is the name of the config-file to be read."""
         self.attrs = {}
         try:
             lines = open(fname).read().split('\n')
@@ -41,7 +45,7 @@ class Config:
                 self.attrs[key] = reduce(str.__add__, arg[1:], '').strip()
     
     def get(self, key, default = lambda: None):
-        """get(key, defaultfun) -> string|None
+        """get(string, f() -> string|None) -> string|None
 
         This method was created allowing for lazy evaluation, you should pass a
         function as a parameter which, when evaluated will return the default

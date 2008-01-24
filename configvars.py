@@ -1,3 +1,4 @@
+"""Contains all the global configuration variables."""
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2008
