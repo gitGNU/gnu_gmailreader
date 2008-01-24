@@ -43,6 +43,7 @@ from htmlentitydefs import entitydefs
 import libgmail
 
 from MIMEParser import MIMEParser
+import configvars as conf
 from Config import Config
 
 # Time (in seconds) to wait between e-mail checks
@@ -374,18 +375,18 @@ class ReadEmail(Command):
         except IndexError:
             raise ExecutionError("Invalid thread number")
 
-        f = open(TMP, 'w')
+        f = open(conf.TMP, 'w')
         for msg in conversation:
             print>>f, self.__format(msg.source, msg.id)
         f.close()
-        mtime = os.path.getmtime(TMP)
+        mtime = os.path.getmtime(conf.TMP)
 
-        os.system('%s %s' % (EDITOR, TMP))
+        os.system('%s %s' % (conf.EDITOR, conf.TMP))
 
-        if mtime != os.path.getmtime(TMP):
-            shutil.copy(TMP, DRAFT)
-            text = self.__reply_maker(open(DRAFT).read())
-            f = open(DRAFT, 'w')
+        if mtime != os.path.getmtime(conf.TMP):
+            shutil.copy(conf.TMP, conf.DRAFT)
+            text = self.__reply_maker(open(conf.DRAFT).read())
+            f = open(conf.DRAFT, 'w')
             f.write(text)
             f.close()
 
@@ -430,7 +431,7 @@ class WaitEmail(Command):
 
 class SendEmail(Command):
     def execute(self):
-        text = open(DRAFT).read()
+        text = open(conf.DRAFT).read()
         attrs = email.message_from_string(text)
         msg = libgmail.GmailComposedMessage(attrs.get('to'),
                                             attrs.get('subject'),
@@ -442,7 +443,7 @@ class SendEmail(Command):
 
 class ComposeEmail(Command):
     def execute(self):
-        os.system('%s %s' % (EDITOR, DRAFT))
+        os.system('%s %s' % (conf.EDITOR, conf.DRAFT))
 
 
 class Help(Command):
@@ -548,20 +549,6 @@ def main():
 
 if __name__ == '__main__':
     try:
-        # global variables setup
-        if os.system('mkdir -p ~/.gmailreader'):
-            sys.stderr.write('Unable to create ~/.gmailreader\n')
-            raise SystemExit, 1
-
-        DRAFT = os.path.expanduser('~/.gmailreader/draft')
-        TMP = os.path.expanduser('~/.gmailreader/tmp')
-
-        EDITOR=Config(os.path.expanduser('~/.gmailreader/config')).get('editor')
-        if not EDITOR:
-            EDITOR = os.getenv('EDITOR')
-        if not EDITOR:
-            EDITOR = 'vi'
-
         main()
     except KeyboardInterrupt:
         print
