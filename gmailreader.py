@@ -45,6 +45,7 @@ import libgmail
 from MIMEParser import MIMEParser
 import configvars as conf
 from Config import Config
+from tabler import tabler
 
 # Time (in seconds) to wait between e-mail checks
 TIMEOUT = 10
@@ -216,7 +217,7 @@ class ListEmails(Command):
                      )
                     )
 
-        for line in self.__tabler(t):
+        for line in tabler(t):
             print line
 
     #XXX: helper functions. They're ok for now, but I might want to revist them,
@@ -263,40 +264,6 @@ class ListEmails(Command):
                 i += 1
 
         return ''.join(final).strip()
-
-    def __greatest_len(self, l):
-        return max(map(len, l))
-
-    def __compose_field(self, lines):
-        x = self.__greatest_len(lines) + 1
-        fields = []
-        for line in lines:
-            fields.append(line+((x-len(line))*' '))
-
-        return fields
-
-    def __concat(self, t1, t2):
-        t = []
-        for a, b in zip(t1,t2):
-            t.append(a+b)
-
-        return t
-
-    def __tabler(self, t):
-        if not t:
-            return []
-
-        table = []
-        table = self.__compose_field([x[0] for x in t])
-        table = self.__concat(table, self.__compose_field([x[1] for x in t]))
-        table = self.__concat(table, self.__compose_field([x[2] for x in t]))
-
-        indentsize = self.__greatest_len([x[0] for x in t]) +\
-                     self.__greatest_len([x[1] for x in t])
-        table = self.__concat(table,
-                              ['\n'+((2+indentsize)*' ')+x[3] for x in t])
-
-        return table
 
 
 class ReadEmail(Command):
