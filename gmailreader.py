@@ -50,6 +50,7 @@ from tabler import tabler
 # Time (in seconds) to wait between e-mail checks
 TIMEOUT = 10
 
+# These are the constants identifying the commands
 LIST_FOLDERS = 'lf'
 LIST_EMAILS = 'lm'
 ENTER_FOLDER = 'cd'
@@ -64,10 +65,12 @@ QUIT = 'q'
 
 
 class NoCommandError(Exception):
+    """Command doesn't exist."""
     pass
 
 
 class ExecutionError(Exception):
+    """something went wrong while executing a command."""
     def __init__(self, message):
         self.message = message
 
@@ -76,6 +79,11 @@ class ExecutionError(Exception):
 
 
 class FieldParser(HTMLParser.HTMLParser):
+    """This is an HTML Parser which ignores any tag except span. Only the data
+    between <span> is stored in the text attribute.
+    
+    This is handy for filtering out the HTML on subject and author fields."""
+
     def __init__(self):
         HTMLParser.HTMLParser.__init__(self)
         self.inside_span = False
@@ -102,6 +110,7 @@ class AccountState:
     """This class have variables that must be shared along the commands. The
     ReadEmail command must know what were the last messages displayed to the
     user, for instance."""
+
     def __init__(self):
         # starting directory is not a label
         self.current_dir = 'inbox'
@@ -114,16 +123,25 @@ class AccountState:
 class Command:
     """This is the basic unit of the program. All the user does is type down
     commands which will give him messages on the screen."""
+
     def __init__(self, s, state, acc):
+        """__init__(self, string, AccountState, GmailAccount)
+
+        This will just save the current AccountState and GmailAccount to the
+        object without doing anything."""
         self.state = state
         self.acc = acc
 
     def execute(self):
+        """This method will execute the command, potentially changing the
+        AccountState that was passed to the object's __init__."""
         pass
 
 
 class ListFolders(Command):
     def execute(self):
+        # folders like inbox, all, etc are threated differently than labels by
+        # libgmail.
         if self.acc.getLabelNames():
             all_labels = libgmail.STANDARD_FOLDERS + self.acc.getLabelNames()
         else:
@@ -136,6 +154,10 @@ class ListFolders(Command):
 
 class Archive(Command):
     def __init__(self, s, state, acc):
+        """__init__(self, string, AccountState, GmailAccount)
+
+        Differently than the standard __init__, it will take the string s into
+        account as the command's arguments."""
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
@@ -151,6 +173,10 @@ class Archive(Command):
 
 class ReportSpam(Command):
     def __init__(self, s, state, acc):
+        """__init__(self, string, AccountState, GmailAccount)
+
+        Differently than the standard __init__, it will take the string s into
+        account as the command's arguments."""
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
@@ -166,6 +192,10 @@ class ReportSpam(Command):
 
 class EnterFolder(Command):
     def __init__(self, s, state, acc):
+        """__init__(self, string, AccountState, GmailAccount)
+
+        Differently than the standard __init__, it will take the string s into
+        account as the command's arguments."""
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
@@ -268,6 +298,10 @@ class ReadEmail(Command):
     EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
 
     def __init__(self, s, state, acc):
+        """__init__(self, string, AccountState, GmailAccount)
+
+        Differently than the standard __init__, it will take the string s into
+        account as the command's arguments."""
         Command.__init__(self, s, state, acc)
         self.arg = s.strip()
 
@@ -358,6 +392,11 @@ class ReadEmail(Command):
 
 class WaitEmail(Command):
     def __init__(self, s, state, acc):
+        """__init__(self, string, AccountState, GmailAccount)
+
+        Differently than the standard __init__, it will take the string s into
+        account as the command's arguments. But instead of using the whole
+        string as one argument, it will split it into several arguments."""
         Command.__init__(self, s, state, acc)
         self.arg = [x.strip() for x in s.split()]
 
