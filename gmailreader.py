@@ -245,8 +245,6 @@ class ListEmails(Command):
             parser.feed(s)
             parser.close()
         except HTMLParser.HTMLParseError:
-            #XXX: I gotta make some better html handling some day. There
-            #     shouldn't be any HTML in the title, really.
             parser.text = s
 
         return parser.text

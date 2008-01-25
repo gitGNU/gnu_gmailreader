@@ -1,3 +1,4 @@
+"Exports the function tabler which makes an string table from a list"
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2008
@@ -44,6 +45,11 @@ def _concat(t1, t2):
     return t
 
 def tabler(t):
+    """tabler([[string]]) -> [string]
+
+    Takes a list of lists of strings and format them in order to the user to be
+    able to print a table on the screen. Each string on the returned list is a
+    new entry"""
     if not t:
         return []
 
@@ -52,8 +58,17 @@ def tabler(t):
     table = _concat(table, _compose_field([x[1] for x in t]))
     table = _concat(table, _compose_field([x[2] for x in t]))
 
+    #XXX: this is a little too specific for our implementation, we might want to
+    #     make this more general.
     indentsize = _greatest_len([x[0] for x in t]) +\
                  _greatest_len([x[1] for x in t])
     table = _concat(table, ['\n'+((2+indentsize)*' ')+x[3] for x in t])
+
+    # removing extra space by the end of the line
+    for i in xrange(len(table)):
+        result = []
+        for x in table[i].split('\n'):
+            result.append(x.rstrip())
+        table[i] = '\n'.join(result)
 
     return table
