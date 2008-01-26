@@ -294,6 +294,18 @@ class ListEmails(Command):
 
         return ''.join(final).strip()
 
+import re
+def _get_email(mail):
+    """_get_email(string) -> string
+
+    Returns the stripped out and all lower case e-mail address (without any
+    names in the form "My Name")"""
+
+    res = re.findall(r'".+" +<(.+@.+)>', mail)
+    if res:
+        return res[0].strip().lower()
+    else:
+        return mail.strip().lower()
 
 class ReadEmail(Command):
     EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
@@ -357,11 +369,22 @@ class ReadEmail(Command):
         #setting up the reply
         body = self.__add_quote(body)
         body = ("On %s, %s wrote:\n" % (msg.get('Date'), frm)) + body
+
         newmsg = email.message_from_string(body)
-        newmsg['To'] = frm
-        receivers = [x for x in to if self.acc.name not in x]
-        receivers.extend(cc)
+
+        newmsg['To'] = frm.strip()
+
+        receivers = set(to).union(set(cc))
+        # remove any string without an email
+        receivers = (x.strip() for x in receivers if x.strip() != '')
+        # remove my own email from the list
+        myemail = _get_email(self.acc.name)
+        receivers = (x for x in receivers if myemail != _get_email(x))
+        # remove the email we're using in the To field from the CC field
+        hisemail = _get_email(newmsg['To'])
+        receivers = (x for x in receivers if hisemail != _get_email(x))
         newmsg['CC'] =  ', '.join(receivers)
+
         newmsg['In-reply-to'] = id
         newmsg['Subject'] = subject
 
