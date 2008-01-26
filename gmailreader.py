@@ -40,6 +40,7 @@ import HTMLParser
 
 from getpass import getpass
 from htmlentitydefs import entitydefs
+from mimify import mime_decode_header
 
 import libgmail
 
@@ -294,6 +295,7 @@ class ListEmails(Command):
 
         return ''.join(final).strip()
 
+
 import re
 def _get_email(mail):
     """_get_email(string) -> string
@@ -306,6 +308,7 @@ def _get_email(mail):
         return res[0].strip().lower()
     else:
         return mail.strip().lower()
+
 
 class ReadEmail(Command):
     EMAIL_DIVISOR = '\n\n'+(80*'-')+'\n\n'
@@ -321,6 +324,8 @@ class ReadEmail(Command):
     def __print_field(self, msg, field):
         value = msg.get(field)
         if value:
+            value = mime_decode_header(value)
+            value = value.decode('iso8859-1').encode('utf-8')
             return field.capitalize()+': '+value
         else:
             return ''

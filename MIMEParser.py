@@ -42,12 +42,13 @@ def _get_body(msg):
         except UnicodeDecodeError:
             pass
     if msg.get_content_type() == 'text/html':
-        p = subprocess.Popen(['html2text'],
+        p = subprocess.Popen(['html2text', '-nobs'],
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE)
         (body, err) = p.communicate(body)
-        
-    return body
+        body = body.decode('iso8859-1').encode('utf-8')
+
+    return body.replace('\r', '')
 
 def _scan_type(msg, t):
     """_scan_type(Message, string) -> [Message]
