@@ -45,7 +45,9 @@ def _get_body(msg):
         p = subprocess.Popen(['html2text', '-nobs'],
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE)
-        (body, err) = p.communicate(body)
+        # XXX: html2text expects iso8859-1 input and returns that to output. I'd
+        # like to work with a command that understands utf-8
+        (body, err) = p.communicate(body.decode('utf-8').encode('iso8859-1'))
         body = body.decode('iso8859-1').encode('utf-8')
 
     return body.replace('\r', '')

@@ -303,7 +303,7 @@ def _get_email(mail):
     Returns the stripped out and all lower case e-mail address (without any
     names in the form "My Name")"""
 
-    res = re.findall(r'".+" +<(.+@.+)>', mail)
+    res = re.findall(r'"?.+"? +<(.+@.+)>', mail)
     if res:
         return res[0].strip().lower()
     else:
