@@ -47,7 +47,12 @@ def _get_body(msg):
                              stdout=subprocess.PIPE)
         # XXX: html2text expects iso8859-1 input and returns that to output. I'd
         # like to work with a command that understands utf-8
-        (body, err) = p.communicate(body.decode('utf-8').encode('iso8859-1'))
+        try:
+            tmp = body.decode('utf-8').encode('iso8859-1')
+        except UnicodeDecodeError:
+            # ops, it wasn't utf-8
+            tmp = body
+        (body, err) = p.communicate(tmp)
         body = body.decode('iso8859-1').encode('utf-8')
 
     return body.replace('\r', '')

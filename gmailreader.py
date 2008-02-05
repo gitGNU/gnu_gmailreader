@@ -363,6 +363,7 @@ class ReadEmail(Command):
 
         #extracting information
         frm = msg.get('From', '')
+        reply_to = msg.get('Reply-To', '')
         cc = msg.get('CC', '').split(',')
         to = msg.get('To', '').split(',')
         id = msg.get('Message-id', '')
@@ -377,7 +378,10 @@ class ReadEmail(Command):
 
         newmsg = email.message_from_string(body)
 
-        newmsg['To'] = frm.strip()
+        if reply_to:
+            newmsg['To'] = reply_to.strip()
+        else:
+            newmsg['To'] = frm.strip()
 
         receivers = set(to).union(set(cc))
         # remove any string without an email
