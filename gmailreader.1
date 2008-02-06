@@ -1,0 +1,108 @@
+.TH GMAILREADER "1" "Feburary 2008" "gmailreader 0.6" "Gmailreader Manual"
+.SH NAME
+gmailreader \- program for reading your gmail in the terminal
+
+
+.SH SYNOPSIS
+.B gmailreader
+
+
+.SH DESCRIPTION
+Using this command you will be able to read the e-mail from your gmail account
+without opening up a web browser. You will enter a interactive interface to which
+you type your commands for listing and answering e-mails. Configuration can be
+done using ~/.gmailreader/config file.
+
+
+.SH HOW THE INTERACTIVE MODE WORKS
+When you call
+.B gmailreader
+you enter the interactive mode. Typing
+.B help
+will give you an overview of each command. Most of them are very straightforward
+and won't be described here.
+
+.B composing e-mail
+.RS 3n
+Composing e-mail is a very simple operation. Once you are in the interactive
+mode, all you have to do is type
+.B c
+(for compose). Your favorite editor will be opened and you can create your
+e-mail by typing in the \fBTo:\fR,
+.B CC:
+and
+.B Subject:
+fields. They work just like any other e-mail reader. But you have to be careful
+enough not to leave spaces between them and to place one empty line after the
+last of them. You can always leave
+.B CC:
+and
+.B Subject:
+out, but you have to fill the
+.B To:
+field.
+.RE
+
+.B reading e-mail
+.RS 3n
+In the interactive mode you have to \fBcd\fR into the label you want (the
+default is \fBinbox\fR) and then type \fBlm\fR (List e-Mails). This will give
+you a list of the e-mails in that label. Afterwards you type \fBo\fR and the
+number of the thread you want to read. The whole thread will be opened in your
+favorite editor.
+.RE
+
+.B replying e-mail
+.RS 3n
+After you have read the thread you may want to reply to one specific e-mail. In
+order to do that, while you are reading the thread you have to delete everything
+but the e-mail you wish to reply (if you use vim I suggest using the dG and dgg
+command, which make it a very easy task).
+
+After you have only the e-mail you want to reply to (with the \fBFrom:\fR,
+\fBTo:\fR, \fBMessage-ID:\fR, \fBCC:\fR and \fBSubject:\fR unchanged) on the
+file you're editing, you save the file and exit your editor. Now, typing \fBc\fR
+(compose) will get you inside your editor again with the e-mail ready to be
+replied. That is, the \fBTo:\fR, \fBCC:\fR, \fBIn-reply-to\fR and \fBSubject\fR
+fields will be updated for replying and the body of the e-mail will be updated
+so the previous e-mail will be quoted.
+.RE
+
+.SH CONFIGURATION
+When you first run gmailreader the directory
+.B ~/.gmailreader
+will be created. Inside this directory there will be the \fBtmp\fR, \fBdraft\fR
+and \fBconfig\fR files. The \fBtmp\fR and \fBdraft\fR files are for internal
+.B gmailreader
+use. The file \fBconfig\fR is the configuration file. The format of it is
+\fBoption = value\fR, where option is one of the following and the value should
+be filled acording to the explanation of the options.
+
+.B username
+.RS 3n
+This is your gmail user name (without the @gmail.com part). It can be used to
+avoid gmailreader asking about it at startup time.
+.RE
+
+.B password
+.RS 3n
+This is your gmail password. If you fill this option you won't be asked to type
+in your password at startup time.
+.RE
+
+.B editor
+.RS 3n
+This is the editor you want to run. Passing parameters to it is allowed. Make
+sure your editor will not fork away, that could mess up gmailreader's replying
+feature. If you don't fill this option the editor will be defaulted to \fBvi\fR.
+.RE
+
+.B script
+.RS 3n
+This is a program that will be called when new e-mail arrive, if you are waiting
+for them using the \fBwait\fR command.
+.RE
+
+
+.SH AUTHOR
+Rafael Cunha de Almeida <almeidaraf@gmail.com>
