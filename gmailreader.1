@@ -32,10 +32,10 @@ gmailreader \- program for reading your gmail in the terminal
 
 
 .SH DESCRIPTION
-Using this command you will be able to read the e-mail from your gmail account
-without opening up a web browser. You will enter a interactive interface to which
-you type your commands for listing and answering e-mails. Configuration can be
-done using ~/.gmailreader/config file.
+By using this command you will be able to read and reply e-mails from your gmail
+account without opening up a web browser. You will enter a interactive interface
+to which you type your commands for listing, reading and composing e-mails.
+Configuration can be done using ~/.gmailreader/config file.
 
 
 .SH HOW THE INTERACTIVE MODE WORKS
@@ -57,7 +57,7 @@ e-mail by typing in the \fBTo:\fR,
 and
 .B Subject:
 fields. They work just like any other e-mail reader. But you have to be careful
-enough not to leave spaces between them and to place one empty line after the
+enough not to leave empty lines between them and to place one empty line after the
 last of them. You can always leave
 .B CC:
 and
@@ -65,6 +65,10 @@ and
 out, but you have to fill the
 .B To:
 field.
+
+After you compose the e-mail you should save the file and exit the editor. You
+will be back to the interactive mode and you will have to type \fBs\fR (send) to
+actually send the e-mail.
 .RE
 
 .B reading e-mail
@@ -85,11 +89,15 @@ command, which make it a very easy task).
 
 After you have only the e-mail you want to reply to (with the \fBFrom:\fR,
 \fBTo:\fR, \fBMessage-ID:\fR, \fBCC:\fR and \fBSubject:\fR unchanged) on the
-file you're editing, you save the file and exit your editor. Now, typing \fBc\fR
+file you are editing, you save the file and exit your editor. Now, typing \fBc\fR
 (compose) will get you inside your editor again with the e-mail ready to be
 replied. That is, the \fBTo:\fR, \fBCC:\fR, \fBIn-reply-to\fR and \fBSubject\fR
 fields will be updated for replying and the body of the e-mail will be updated
 so the previous e-mail will be quoted.
+
+After you are done composing your reply you should save the file and exit the
+editor. This way you will be back to the interactive mode, where you should type
+the command \fBs\fR (send) to actually send the reply.
 .RE
 
 .SH CONFIGURATION
