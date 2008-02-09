@@ -470,6 +470,8 @@ class SendEmail(Command):
     def execute(self):
         text = open(conf.DRAFT).read()
         attrs = email.message_from_string(text)
+        if not attrs.get('to'):
+            raise ExecutionError("No `To' field in message")
         msg = libgmail.GmailComposedMessage(attrs.get('to'),
                                             attrs.get('subject'),
                                             attrs.get_payload(),
