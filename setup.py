@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='gmailreader',
-      version='0.6',
+      version='0.7',
       description='E-mail reader for gmail',
       author='Rafael C. Almeida',
       author_email='almeidaraf@gmail.com',
