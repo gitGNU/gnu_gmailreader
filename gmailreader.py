@@ -477,7 +477,15 @@ class SendEmail(Command):
                                             attrs.get_payload(),
                                             attrs.get('cc'),
                                             attrs.get('bcc'))
-        self.acc.sendMessage(msg, replyTo=attrs.get('in-reply-to'))
+        try:
+            self.acc.sendMessage(msg, replyTo=attrs.get('in-reply-to'))
+        except TypeError:
+            warn = """
+Warning: Wrong version of libgmail being used. I'll be able to send the e-mail
+         but not to keep it organized in a thread.
+"""
+            sys.stderr.write(warn)
+            self.acc.sendMessage(msg)
 
 
 class ComposeEmail(Command):
@@ -548,6 +556,12 @@ class CommandFactory:
 
 
 def main():
+    if libgmail.Version != '0.1.8-rafael4':
+        warn = """
+Warning: Please use libgmail-0.1.8-rafael4. Without it you won't have access to
+all features. Look at gmailreader's web page for details.
+"""
+        sys.stderr.write(warn)
     conf = Config(os.path.expanduser('~/.gmailreader/config'))
     email = conf.get('username', lambda: raw_input("Username: "))
     email += '@gmail.com'
