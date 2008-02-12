@@ -339,9 +339,9 @@ class ReadEmail(Command):
         if mp.forward:
             body += '\n\n' + mp.forward
 
-        fields = [mget('to'),
+        fields = [mget('from'),
+                  mget('to'),
                   mget('cc'),
-                  mget('from'),
                   mget('date'),
                   'Message-ID: %s' % msgid,
                   mget('subject'),
