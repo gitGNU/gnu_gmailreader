@@ -374,7 +374,11 @@ class ReadEmail(Command):
 
         #setting up the reply
         body = self.__add_quote(body)
-        body = ("On %s, %s wrote:\n" % (msg.get('Date'), frm)) + body
+        date = msg.get('Date')
+        if date:
+            body = ("On %s, %s wrote:\n" % (date, frm)) + body
+        else:
+            body = ("%s wrote:\n" % frm) + body
 
         newmsg = email.message_from_string(body)
 
