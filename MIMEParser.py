@@ -52,6 +52,8 @@ def _get_body(msg):
         except UnicodeDecodeError:
             # ops, it wasn't utf-8
             tmp = body
+        except UnicodeEncodeError:
+            tmp = body
         (body, err) = p.communicate(tmp)
         body = body.decode('iso8859-1').encode('utf-8')
 
