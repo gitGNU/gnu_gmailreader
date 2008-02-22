@@ -26,6 +26,10 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
                        doesn't, let me know)
 * libgmail: http://www.dcc.ufmg.br/~rafaelc/libgmail/
             (official version at http://libgmail.sourceforge.net)
+* html2text: http://ftp.de.debian.org/debian/pool/main/h/html2text/html2text_1.3.2a.orig.tar.gz
+             (that is the only site with html2text that I know of. You can see
+	      the debian package's site at:
+	      http://packages.debian.org/etch/html2text)
 
 
 1. GOAL
