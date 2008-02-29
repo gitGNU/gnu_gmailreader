@@ -253,7 +253,7 @@ class ListEmails(Command):
             print line
 
     #XXX: helper functions. They're ok for now, but I might want to revist them,
-    #     maybe write something better as -- if -- the project moves
+    #     maybe write something better as the project moves
     def __fix_all(self, s):
         s = self.__fix_encoding(s)
         s = self.__fix_html(s)
@@ -417,7 +417,7 @@ class ReadEmail(Command):
         f.close()
         mtime = os.path.getmtime(conf.TMP)
 
-        os.system('%s %s' % (conf.EDITOR, conf.TMP))
+        os.system('%s %s' % (conf.READER, conf.TMP))
 
         if mtime != os.path.getmtime(conf.TMP):
             shutil.copy(conf.TMP, conf.DRAFT)

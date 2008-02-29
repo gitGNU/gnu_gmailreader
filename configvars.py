@@ -44,8 +44,12 @@ TMP = os.path.expanduser('~/.gmailreader/tmp')
 if not os.path.isfile(TMP):
     open(TMP, 'w').close()
 
-EDITOR = Config(os.path.expanduser('~/.gmailreader/config')).get('editor')
+_conf = Config(os.path.expanduser('~/.gmailreader/config'))
+
+EDITOR = os.getenv('EDITOR')
 if not EDITOR:
-    EDITOR = os.getenv('EDITOR')
-if not EDITOR:
-    EDITOR = 'vi'
+    EDITOR = _conf.get('editor', lambda: 'vi')
+
+READER = os.getenv('READER')
+if not READER:
+    READER = _conf.get('reader', lambda: EDITOR)
